@@ -1,7 +1,7 @@
 {
   "name": "p5-playground",
   "version": "0.1.0",
-  "homepage": "https://karanveerb.github.io/p5-playground",
+  "homepage": "http://karanveerb.github.io/p5-playground",
   "private": true,
   "dependencies": {
     "@p5-wrapper/react": "^4.3.2",
