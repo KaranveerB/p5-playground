@@ -1,5 +1,6 @@
-import { Vector } from "p5";
-import { unreachable, DrawContext, randInt, Drawable } from "./../util";
+import { P5CanvasInstance } from "@p5-wrapper/react";
+import { Color, Vector } from "p5";
+import { unreachable, DrawContext, randInt, Drawable, gappedRandint, drawTrail } from "./../util";
 
 export class KDTreeNode {
   point: Vector;
@@ -20,6 +21,7 @@ export class KDTree implements Drawable {
     public min_y: number = 0,
     public max_x: number = 100,
     public max_y: number = 100,
+    public gap: number = 10,
   ) {
     this.root = null;
   }
@@ -92,6 +94,7 @@ export class KDTree implements Drawable {
 
   drawNode(
     ctx: DrawContext,
+    fade: number,
     node: KDTreeNode | null,
     min_x: number,
     min_y: number,
@@ -103,34 +106,44 @@ export class KDTree implements Drawable {
       return;
     }
     const p = node.point;
-    ctx.p5.ellipse(ctx.xm * p.x, ctx.ym * p.y, 1.5);
+    const x = ctx.xm * p.x
+    const y = ctx.ym * p.y
+    const c1 = ctx.p5.color(150 * fade);
+    const c2 = ctx.p5.color(0);
+    const w1 = 1
+    const w2 = 0.5
+    //ctx.p5.ellipse(x, y, 1.5);
+
+    const steps = fade > 0.5 ? 5 : 1;
+    //drawTrail(ctx.p5, steps, x, y, -300, c1, c2, w1, w2);
     if (depth % 2 == 0) {
-      ctx.p5.line(ctx.xm * p.x, ctx.ym * min_y, ctx.xm * p.x, ctx.ym * max_y);
+      ctx.p5.line(x, ctx.ym * min_y, x, ctx.ym * max_y);
       if (node.left)
-        this.drawNode(ctx, node.left, min_x, min_y, p.x, max_y, depth + 1);
+        this.drawNode(ctx, fade, node.left, min_x, min_y, p.x, max_y, depth + 1);
       if (node.right)
-        this.drawNode(ctx, node.right, p.x, min_y, max_x, max_y, depth + 1);
+        this.drawNode(ctx, fade, node.right, p.x, min_y, max_x, max_y, depth + 1);
     } else {
-      ctx.p5.line(ctx.xm * min_x, ctx.ym * p.y, ctx.xm * max_x, ctx.ym * p.y);
+      ctx.p5.line(ctx.xm * min_x, y, ctx.xm * max_x, y);
       if (node.left)
-        this.drawNode(ctx, node.left, min_x, min_y, max_x, p.y, depth + 1);
+        this.drawNode(ctx, fade, node.left, min_x, min_y, max_x, p.y, depth + 1);
       if (node.right)
-        this.drawNode(ctx, node.right, min_x, p.y, max_x, max_y, depth + 1);
+        this.drawNode(ctx, fade, node.right, min_x, p.y, max_x, max_y, depth + 1);
     }
   }
 
-  public draw(ctx: DrawContext) {
+  public draw(ctx: DrawContext, fade: number) {
     ctx.p5.noFill();
-    ctx.p5.strokeWeight(0.3);
+    ctx.p5.strokeWeight(0.3 * fade);
     ctx.p5.rect(
       ctx.xm * this.min_x,
       ctx.ym * this.min_y,
       ctx.xm * this.width(),
       ctx.ym * this.height(),
     );
-    ctx.p5.fill(255)
+    ctx.p5.fill(255 * fade)
     this.drawNode(
       ctx,
+      fade,
       this.root,
       this.min_x,
       this.min_y,
@@ -143,8 +156,8 @@ export class KDTree implements Drawable {
 export function fillKDTree(kdTree: KDTree, numPoints: number) {
   const points = [];
   for (let i = 0; i < numPoints; i++) {
-    const x = randInt(kdTree.min_x, kdTree.max_x);
-    const y = randInt(kdTree.min_y, kdTree.max_y);
+    const x = gappedRandint(kdTree.min_x, kdTree.max_x, kdTree.gap);
+    const y = gappedRandint(kdTree.min_y, kdTree.max_y, kdTree.gap);
     points.push(new Vector(x, y));
   }
   points.forEach((point) => {

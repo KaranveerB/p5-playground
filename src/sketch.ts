@@ -12,27 +12,23 @@ const hw: number = w / 2;
 const hh: number = h / 2;
 
 // z-axis vanishing point
-const vp: number = -6000;
+const vp: number = -2000;
 
 export function sketch(p5: P5CanvasInstance) {
   p5.setup = () => {
     p5.createCanvas(w, h, p5.WEBGL);
   };
 
-  const kdTree = new KDTree();
-  fillKDTree(kdTree, 20); // Filling the KD-Tree with 20 random points
-
+  const gen = () => {
+    const kd_tree = new KDTree(0, 0, 100, 100, 10);
+    fillKDTree(kd_tree, 20);
+    return kd_tree;
+  };
   const xm = 3;
   const ym = 3;
-  //p5.translate((-xm * kdTree.width()) / 2, (-ym * kdTree.height()) / 2);
-  const x = -xm * kdTree.width() / 2;
-  const y = -ym * kdTree.height() / 2;
-  const gen = () => {
-    const kdTree = new KDTree();
-    fillKDTree(kdTree, 20);
-    return kdTree;
-  };
-  const kdTrees: Moving<KDTree> = new Moving(10, 15, vp, 1000, x, y, gen);
+  const x = -xm * 100 / 2;
+  const y = -ym * 100 / 2;
+  const kd_trees: Moving<KDTree> = new Moving(5, 10, vp, 750, x, y, gen);
 
   p5.draw = () => {
     p5.translate(0, 0, 0);
@@ -48,7 +44,7 @@ export function sketch(p5: P5CanvasInstance) {
 
     p5.push();
     //kdTree.draw({ p5, xm: 3, ym: 3 })
-    kdTrees.poll({ p5, xm: 3, ym: 3 });
+    kd_trees.poll({ p5, xm: 3, ym: 3 });
     p5.pop();
 
     p5.smooth();
