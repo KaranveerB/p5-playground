@@ -1,6 +1,13 @@
 import { P5CanvasInstance } from "@p5-wrapper/react";
 import { Color, Vector } from "p5";
-import { unreachable, DrawContext, randInt, Drawable, gappedRandint, drawTrail } from "./../util";
+import {
+  unreachable,
+  DrawContext,
+  randInt,
+  Drawable,
+  gappedRandint,
+  drawTrail,
+} from "./../util";
 
 export class KDTreeNode {
   point: Vector;
@@ -16,6 +23,8 @@ export class KDTreeNode {
 
 export class KDTree implements Drawable {
   root: KDTreeNode | null;
+  precomputed_lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
+  precomputed_points: { x: number; y: number }[] = [];
   constructor(
     public min_x: number = 0,
     public min_y: number = 0,
@@ -92,9 +101,19 @@ export class KDTree implements Drawable {
     return this.max_y - this.min_y;
   }
 
-  drawNode(
+  public precompute(ctx: DrawContext) {
+    this.precompute_aux(
+      ctx,
+      this.root,
+      this.min_x,
+      this.min_y,
+      this.max_x,
+      this.max_y,
+    );
+  }
+
+  public precompute_aux(
     ctx: DrawContext,
-    fade: number,
     node: KDTreeNode | null,
     min_x: number,
     min_y: number,
@@ -102,32 +121,57 @@ export class KDTree implements Drawable {
     max_y: number,
     depth: number = 0,
   ) {
+      console.log("fuu")
     if (node === null) {
       return;
     }
     const p = node.point;
-    const x = ctx.xm * p.x
-    const y = ctx.ym * p.y
-    const c1 = ctx.p5.color(150 * fade);
-    const c2 = ctx.p5.color(0);
-    const w1 = 1
-    const w2 = 0.5
-    //ctx.p5.ellipse(x, y, 1.5);
+    this.precomputed_points.push({ x: p.x, y: p.y });
 
-    const steps = fade > 0.5 ? 5 : 1;
-    //drawTrail(ctx.p5, steps, x, y, -300, c1, c2, w1, w2);
     if (depth % 2 == 0) {
-      ctx.p5.line(x, ctx.ym * min_y, x, ctx.ym * max_y);
+      this.precomputed_lines.push({ x1: p.x, y1: min_y, x2: p.x, y2: max_y });
       if (node.left)
-        this.drawNode(ctx, fade, node.left, min_x, min_y, p.x, max_y, depth + 1);
+        this.precompute_aux(
+          ctx,
+          node.left,
+          min_x,
+          min_y,
+          p.x,
+          max_y,
+          depth + 1,
+        );
       if (node.right)
-        this.drawNode(ctx, fade, node.right, p.x, min_y, max_x, max_y, depth + 1);
+        this.precompute_aux(
+          ctx,
+          node.right,
+          p.x,
+          min_y,
+          max_x,
+          max_y,
+          depth + 1,
+        );
     } else {
-      ctx.p5.line(ctx.xm * min_x, y, ctx.xm * max_x, y);
+      this.precomputed_lines.push({ x1: min_x, y1: p.y, x2: max_x, y2: p.y });
       if (node.left)
-        this.drawNode(ctx, fade, node.left, min_x, min_y, max_x, p.y, depth + 1);
+        this.precompute_aux(
+          ctx,
+          node.left,
+          min_x,
+          min_y,
+          max_x,
+          p.y,
+          depth + 1,
+        );
       if (node.right)
-        this.drawNode(ctx, fade, node.right, min_x, p.y, max_x, max_y, depth + 1);
+        this.precompute_aux(
+          ctx,
+          node.right,
+          min_x,
+          p.y,
+          max_x,
+          max_y,
+          depth + 1,
+        );
     }
   }
 
@@ -140,16 +184,24 @@ export class KDTree implements Drawable {
       ctx.xm * this.width(),
       ctx.ym * this.height(),
     );
-    ctx.p5.fill(255 * fade)
-    this.drawNode(
-      ctx,
-      fade,
-      this.root,
-      this.min_x,
-      this.min_y,
-      this.max_x,
-      this.max_y,
-    );
+    ctx.p5.fill(255 * fade);
+    const c1 = ctx.p5.color(150 * fade);
+    const c2 = ctx.p5.color(0);
+    const w1 = 1;
+    const w2 = 0.5;
+
+    for (const line of this.precomputed_lines) {
+      ctx.p5.line(
+        ctx.xm * line.x1,
+        ctx.ym * line.y1,
+        ctx.xm * line.x2,
+        ctx.ym * line.y2,
+      );
+    }
+    for (const point of this.precomputed_points) {
+      ctx.p5.ellipse(ctx.xm * point.x, ctx.ym * point.y, 1.5);
+    }
+    //const steps = fade > 0.5 ? 5 : 1;
   }
 }
 

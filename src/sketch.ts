@@ -22,6 +22,7 @@ export function sketch(p5: P5CanvasInstance) {
   const gen = () => {
     const kd_tree = new KDTree(0, 0, 100, 100, 10);
     fillKDTree(kd_tree, 20);
+    kd_tree.precompute({ p5, xm: 3, ym: 3 });
     return kd_tree;
   };
   const xm = 3;
