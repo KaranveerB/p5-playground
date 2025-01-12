@@ -5,7 +5,7 @@ import {
   DrawContext,
   randInt,
   Drawable,
-  gappedRandint,
+  gappedRandInt,
   drawTrail,
 } from "./../util";
 
@@ -121,7 +121,6 @@ export class KDTree implements Drawable {
     max_y: number,
     depth: number = 0,
   ) {
-      console.log("fuu")
     if (node === null) {
       return;
     }
@@ -208,8 +207,8 @@ export class KDTree implements Drawable {
 export function fillKDTree(kdTree: KDTree, numPoints: number) {
   const points = [];
   for (let i = 0; i < numPoints; i++) {
-    const x = gappedRandint(kdTree.min_x, kdTree.max_x, kdTree.gap);
-    const y = gappedRandint(kdTree.min_y, kdTree.max_y, kdTree.gap);
+    const x = gappedRandInt(kdTree.min_x, kdTree.max_x, kdTree.gap);
+    const y = gappedRandInt(kdTree.min_y, kdTree.max_y, kdTree.gap);
     points.push(new Vector(x, y));
   }
   points.forEach((point) => {

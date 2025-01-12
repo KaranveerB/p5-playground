@@ -1,5 +1,5 @@
 import { P5CanvasInstance } from "@p5-wrapper/react";
-import p5, { Vector } from "p5";
+import p5, { Font, Vector } from "p5";
 
 import { KDTree, fillKDTree } from "./p5e/kdTree";
 import { Moving } from "./p5e/moving";
@@ -21,8 +21,13 @@ export function sketch(p5: P5CanvasInstance) {
 
   const gen = () => {
     const kd_tree = new KDTree(0, 0, 100, 100, 10);
-    fillKDTree(kd_tree, 20);
-    kd_tree.precompute({ p5, xm: 3, ym: 3 });
+    // fill the tree in async. We don't care if it's drawn before it's done
+    // becuase it'll be done fast enough.
+    async function fill(kd_tree: KDTree) {
+      fillKDTree(kd_tree, 100);
+      kd_tree.precompute({ p5, xm: 3, ym: 3 });
+    };
+    fill(kd_tree) // run async
     return kd_tree;
   };
   const xm = 3;

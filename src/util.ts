@@ -3,19 +3,19 @@ import { Color } from "p5";
 
 export function unreachable(): never {
   throw new Error("unreachable");
-};
+}
 
 export type DrawContext = { p5: P5CanvasInstance; xm: number; ym: number };
 
 export function randInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+}
 
-export function gappedRandint(min: number, max: number, gap: number): number {
+export function gappedRandInt(min: number, max: number, gap: number): number {
   const mid = (max + min - gap) / 2;
   const val = randInt(min, max - gap);
   if (val > mid) {
-    return val + gap
+    return val + gap;
   } else {
     return val;
   }
@@ -23,7 +23,7 @@ export function gappedRandint(min: number, max: number, gap: number): number {
 
 export interface Drawable {
   draw(ctx: DrawContext, fade: number): void;
-};
+}
 
 export function drawTrail(
   p5: P5CanvasInstance,
@@ -34,7 +34,7 @@ export function drawTrail(
   c1: Color,
   c2: Color,
   w1: number,
-  w2: number
+  w2: number,
 ): void {
   p5.push();
   const z_interval = trail_length / steps;
@@ -46,7 +46,36 @@ export function drawTrail(
 
     p5.stroke(col);
     p5.strokeWeight(weight);
-    p5.line(x, y, z, x, y, z + z_interval)
+    p5.line(x, y, z, x, y, z + z_interval);
   }
   p5.pop();
+}
+
+export function guassianRandom(): number {
+  // Uses Box-Muller transform
+  const u1 = Math.random();
+  const u2 = Math.random();
+  const r = Math.sqrt(-2 * Math.log(u1));
+  const theta = 2 * Math.PI * u2;
+  const val = 0.5 + (r * Math.sin(theta)) / 5;
+  if (val < 0 || val > 1) {
+    return guassianRandom();
+  } else {
+    return val;
+  }
+}
+
+export function gappedGuassianRandom(
+  min: number,
+  max: number,
+  gap: number,
+): number {
+  const mid = (max + min - gap) / 2;
+  const rand = Math.round(guassianRandom() * (mid - min));
+  const right = Math.random() > 0.5;
+  if (right) {
+    return max - rand;
+  } else {
+    return rand;
+  }
 }

@@ -26,7 +26,7 @@ export class Moving<T extends Drawable> {
   ) {
     this.reset_val = max - min;
     const interval = (max - min) / count;
-    for (var z = min; z <= max; z += interval) {
+    for (var z = min; z < max; z += interval) {
       this.data.push(new Container(z, gen()))
     }
   }
